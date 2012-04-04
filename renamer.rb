@@ -45,7 +45,7 @@ def nameparts(f)
 end
 
 # Get all picture numbers
-@@numbers = file_list(FILE_EXT).map{|f| nameparts(f)[1].to_i}.uniq.sort
+@@numbers = file_list.map{|f| nameparts(f)[1].to_i}.uniq.sort
 
 raise "Numbers include 0" if @@numbers.include?(0)
 
