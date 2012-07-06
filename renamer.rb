@@ -23,6 +23,8 @@ end
 @@perform = ARGV.include?('PERFORM')
 
 @@dir = File.directory?(ARGV[0]) ? ARGV[0] : File.expand_path(File.join(File.dirname(__FILE__), ARGV[0]))
+@@dir = @@dir + '/' unless @@dir[-1] == '/'
+
 @@prefix = File.basename(@@dir)
 
 unless File.exists?(@@dir) && File.directory?(@@dir)
@@ -34,6 +36,8 @@ puts "Directory: #{@@dir}"
 
 FILE_EXT = "*.{JPG,NEF,AVI,TIF,DNG,jpg,nef,avi,tif,dng}"
 
+@@subdirs = Dir[File.join(@@dir, '*')].map{|d| d.split('/').last}.sort
+
 # Get files for specific dirs
 def file_list
   return Dir[File.join(@@dir, '**', FILE_EXT)]
@@ -41,7 +45,11 @@ end
 
 # Split filename for parts (prefix + number + suffix)
 def nameparts(f)
-  File.basename(f).scan(/([^_]+)_([\d]+)([^\.]*)/)[0]
+  subdir = File.dirname(f).sub(@@dir, '').split('/').first
+  subdir_idx = @@subdirs.index(subdir) + 1
+  parts = File.basename(f).scan(/([^_]+)_([\d]+)([^\.]*)/)[0]
+  parts[1] = "#{subdir_idx}#{parts[1]}"
+  parts # returns [prefix, number, suffix]
 end
 
 # Get all picture numbers
@@ -49,18 +57,23 @@ end
 
 raise "Numbers include 0" if @@numbers.include?(0)
 
+@@output_files = []
+
 def rename_files(files)
   files.sort.each do |file|
-    dirname = File.dirname(file)
     extname = File.extname(file).downcase
     prefix, number, suffix = nameparts(file)
     
     newnumber = @@numbers.index(number.to_i) + 1
     newfilename = [@@prefix, '_', "%04d" % newnumber, suffix, extname].join
   
-    newfile = File.join(dirname, newfilename)
-  
-    msg = "moving *#{file.split('/')[-2..-1].join('/')}* to *#{newfile.split('/')[-2..-1].join('/')}*"
+    subdir = File.dirname(file).sub(@@dir, '').split('/').last
+    newdir = File.join(@@dir, subdir)
+    FileUtils.mkdir_p(newdir)
+    newfile = File.join(newdir, newfilename)
+    
+    @@output_files << newfile
+    msg = "moving *#{file.sub(@@dir, '')}* to *#{newfile.sub(@@dir, '')}*"
     puts msg
 
     next unless @@perform
@@ -69,4 +82,11 @@ def rename_files(files)
 end
 
 rename_files(file_list)
+
+puts "#{file_list.size} input files, #{@@output_files.size} output files"
+if @@perform
+  puts 'Done!'
+else
+  puts 'DRYRUN - files not renamed!'
+end
 
