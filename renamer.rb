@@ -48,13 +48,13 @@ def nameparts(f)
   subdir = File.dirname(f).sub(@@dir, '').split('/').first
   subdir_idx = @@subdirs.index(subdir) + 1
   parts = File.basename(f).scan(/([^_]+)_([\d]+)([^\.]*)/)[0]
-  parts[1] = "#{subdir_idx}#{parts[1]}"
+  number = "%04d" % parts[1].to_i
+  parts[1] = "#{subdir_idx}#{number}"
   parts # returns [prefix, number, suffix]
 end
 
 # Get all picture numbers
 @@numbers = file_list.map{|f| nameparts(f)[1].to_i}.uniq.sort
-
 raise "Numbers include 0" if @@numbers.include?(0)
 
 @@output_files = []
