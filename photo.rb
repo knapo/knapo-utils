@@ -5,10 +5,10 @@ class Photo
   def initialize(path, scope)
     @path = path
     @old_name = File.basename(@path)
-    read_created_at
-    set_name_parts
     @scope = scope
     @extname = File.extname(path).downcase.sub('.', '')
+    set_name_parts
+    set_created_at
   end
 
   def set_new_name(dir, album_name, new_number)
@@ -17,7 +17,7 @@ class Photo
     @new_path = File.join(dir, @extname, @new_name)
   end
   
-  def read_created_at
+  def set_created_at
     metadata  = `exiv2 pr #{@path}`
     timestamp = metadata.scan(/[0-9]{4}:[0-9]{2}:[0-9]{2}\s[0-9]{2}:[0-9]{2}:[0-9]{2}/).first
     if timestamp

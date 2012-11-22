@@ -26,8 +26,8 @@ if @@dirs.size < 2 || @@dirs.detect{|f| !File.directory?(f) }
 end
 
 #TODO
-@@max_created_at = TODO # Time.parse('2012-10-08 23:59:00 UTC')
-@@album_name = TODO
+@@max_created_at = Time.parse('2012-10-08 23:59:00 UTC')
+@@album_name = 'ALBUM_NAME'
 
 @@scopes = @@dirs.map{|d| File.basename(d)}
 
@@ -42,13 +42,14 @@ end
 
 # Get files in specific dir
 def file_list(scope)
-  return Dir[File.join(@@dir, scope, '**', FILE_EXT)]
+  return Dir[File.join(@@dir, scope, '**', FILE_EXT)].sort
 end
 
 @@files = {}
 
 puts 'Listing files for each scope...'
 @@scopes.each do |scope|
+  puts 'Scope: ' + scope
   @@files[scope] = Photo.collection(file_list(scope), scope)
 end
 
