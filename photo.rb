@@ -1,11 +1,13 @@
 require 'time'
 class Photo
-  attr_reader :path, :created_at, :number, :suffix, :scope, :extname, :old_name, :new_name, :new_path
+  attr_reader :path, :rel_path, :group, :created_at, :number, :suffix, :scope, :extname, :old_name, :new_name, :new_path
 
   def initialize(path, scope)
     @path = path
     @old_name = File.basename(@path)
     @scope = scope
+    @group = path.scan(/\/#{scope}\/[0-9]*/)
+    @rel_path = path[path.index("/#{scope}/")..-1]
     @extname = File.extname(path).downcase.sub('.', '')
     set_name_parts
     set_created_at
@@ -18,7 +20,8 @@ class Photo
   end
   
   def set_created_at
-    metadata  = `exiv2 pr #{@path}`
+    return unless ['dng', 'nef', 'jpg', 'cr2'].include?(@extname)
+    metadata  = `exiv2 -q pr #{@path}`
     timestamp = metadata.scan(/[0-9]{4}:[0-9]{2}:[0-9]{2}\s[0-9]{2}:[0-9]{2}:[0-9]{2}/).first
     if timestamp
       parts = timestamp.split(/[\s:]/)
@@ -30,14 +33,27 @@ class Photo
   end
 
   def fix_created_at(list, max_created_at)
-    previous_file = list.detect{|f| f.number < @number && f.created_at && f.created_at <= max_created_at}
-    puts "Fixing created_at for #{@path} based on #{previous_file.path}"
-    return unless previous_file
-    @created_at = previous_file.created_at + 1
+    possible_neighbours = list.select{ |f| f.group == group && f.created_at && f.created_at <= max_created_at }
+    previous_file = possible_neighbours.select { |f| f.number < @number }.max_by { |f| f.number } 
+    next_file = possible_neighbours.select { |f| f.number > @number }.min_by { |f| f.number } 
+    puts "Fixing created_at for #{@rel_path} based on #{[previous_file && previous_file.rel_path, next_file && next_file.rel_path].compact.join(' and ')}"
+    if previous_file && next_file
+      delta = next_file.created_at - previous_file.created_at
+      @created_at = next_file.created_at - (delta/2.0).round
+    elsif next_file
+      @created_at = next_file.created_at - 1
+    elsif previous_file
+      @created_at = previous_file.created_at + 1
+    else
+      raise "!!! COULD NOT SET CREATED_AT FOR #{@path} !!!"
+    end
   end
 
   def set_name_parts
     parts = File.basename(@path).scan(/([^_]+)_([\d]+)([^\.]*)/)[0]
+    if parts.empty?
+      raise "Invalid filename: #{@path}"
+    end
     @number = parts[1]
     @suffix = parts[2]
   end
