@@ -18,7 +18,7 @@ unless File.exists?(@dir) && File.directory?(@dir)
   exit
 end
 
-@dirs = Dir[File.join(@dir, '*')]
+@dirs = Dir[File.join(@dir, '*')].sort
 
 if @dirs.size < 2 || @dirs.detect{|f| !File.directory?(f) }
   puts "Invalid subdirs: #{@dirs.inspect}"
@@ -26,14 +26,14 @@ if @dirs.size < 2 || @dirs.detect{|f| !File.directory?(f) }
 end
 
 #TODO
-@max_created_at = Time.parse('2013-08-03 23:59:00 UTC')
+@max_created_at = Time.parse('2013-08-04 23:59:00 UTC')
 @album_name = 'ALBUM_NAME'
 
 @scopes = @dirs.map{|d| File.basename(d)}
 
 puts "SCOPES: #{@scopes.join(', ')}"
 
-FILE_EXT = "*.{JPG,NEF,AVI,TIF,DNG,jpg,nef,avi,tif,dng}"
+FILE_EXT = "*.{JPG,NEF,AVI,TIF,DNG,MOV,jpg,nef,avi,tif,dng,mov}"
 
 # Split filename for parts (prefix + number + suffix)
 def nameparts(f)
@@ -68,7 +68,7 @@ puts 'Fixing missing timestamps...'
 end
 
 @all_files = @files.values.flatten
-@all_files.sort!{ |a,b| a.created_at <=> b.created_at }
+@all_files.sort!{ |a,b| [a.created_at, a.number] <=> [b.created_at, b.number] }
 
 @all_files.each_with_index do |file, number|
   file.set_new_name(@dir, @album_name, number + 1)

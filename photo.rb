@@ -14,6 +14,9 @@ class Photo
   end
 
   def set_new_name(dir, album_name, new_number)
+    #album_name = if created_at < Time.parse('2013-07-29 09:25:00 UTC') then 'ALBUM1'
+    #else 'ALBUM2'
+    #end
     created_on = created_at.strftime('%Y.%m.%d')
     @new_name = [created_on, '-', album_name, '_', "%04d" % new_number, @suffix, '-', @scope, '.', @extname].join
     @new_path = File.join(dir, @extname, @new_name)
@@ -51,11 +54,12 @@ class Photo
 
   def set_name_parts
     parts = File.basename(@path).scan(/([^_]+)_([\d]+)([^\.]*)/)[0]
-    if parts.empty?
+    if parts.nil? || parts.empty?
       raise "Invalid filename: #{@path}"
     end
     @number = parts[1]
     @suffix = parts[2]
+    @suffix = nil if @suffix == '-Edit'
   end
 
   def self.collection(paths, scope)
