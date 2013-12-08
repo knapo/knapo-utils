@@ -27,8 +27,9 @@ raise "tile not given" if @tiles.empty?
 @files = Dir[File.join(@in_dir, FILE_RULE)]
 raise "No files found!" if @files.empty?
 
-@base_border = (`identify -format "%w" #{@files.first}`.to_f * BORDER_FACTOR).to_i / 2
+@base_border = (`identify -format "%w" '#{@files.first}'`.to_f * BORDER_FACTOR).to_i / 2
 
+puts "Set border to: #{@base_border}"
 FileUtils.rm_rf(@out_dir)
 FileUtils.mkdir_p(@out_dir)
 
@@ -48,13 +49,13 @@ def exec(cmd)
 end
 
 def montage(tile, color)
-  file_list = files_in(@in_dir).join(' ')
-  exec "montage -background #{color} -geometry +#{@base_border}+#{@base_border} -tile #{tile} #{file_list} #{output_file(tile, color)}"
+  file_list = files_in(@in_dir).map{|f| "'#{f}'"}.join(' ')
+  exec "montage -background #{color} -geometry +#{@base_border}+#{@base_border} -tile #{tile} #{file_list} '#{output_file(tile, color)}'"
 end
 
 def fix_border(tile, color)
   file = output_file(tile, color)
-  exec "convert -bordercolor #{color} -border #{@base_border}x#{@base_border} #{file} #{file}"
+  exec "convert -bordercolor #{color} -border #{@base_border}x#{@base_border} '#{file}' '#{file}'"
 end
 
 COLORS.each do |color|

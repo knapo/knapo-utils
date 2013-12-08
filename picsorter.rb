@@ -3,6 +3,10 @@
 require 'fileutils'
 require File.expand_path('../photo', __FILE__)
 
+# Custom config
+@max_created_at = Time.parse('2013-12-03 06:00:00 UTC') 
+@album_name = 'Paris'
+
 unless ARGV[0]
   puts "No directory given! #{ARGV[0]}"
   exit
@@ -20,14 +24,10 @@ end
 
 @dirs = Dir[File.join(@dir, '*')].sort
 
-if @dirs.size < 2 || @dirs.detect{|f| !File.directory?(f) }
+if @dirs.empty? || @dirs.detect{|f| !File.directory?(f) }
   puts "Invalid subdirs: #{@dirs.inspect}"
   exit
 end
-
-#TODO
-@max_created_at = Time.parse('2013-08-04 23:59:00 UTC')
-@album_name = 'ALBUM_NAME'
 
 @scopes = @dirs.map{|d| File.basename(d)}
 

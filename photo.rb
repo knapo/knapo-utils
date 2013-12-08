@@ -24,7 +24,7 @@ class Photo
   
   def set_created_at
     return unless ['dng', 'nef', 'jpg', 'cr2'].include?(@extname)
-    metadata  = `exiv2 -q pr #{@path}`
+    metadata  = `exiv2 -q pr '#{@path}'`
     timestamp = metadata.scan(/[0-9]{4}:[0-9]{2}:[0-9]{2}\s[0-9]{2}:[0-9]{2}:[0-9]{2}/).first
     if timestamp
       parts = timestamp.split(/[\s:]/)
