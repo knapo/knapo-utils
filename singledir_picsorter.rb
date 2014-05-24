@@ -43,16 +43,6 @@ def file_list
   return Dir[File.join(@dir, '**', FILE_EXT)]
 end
 
-# Split filename for parts (prefix + number + suffix)
-def nameparts(f)
-  subdir = File.dirname(f).sub(@dir, '').split('/').first
-  subdir_idx = @subdirs.index(subdir) + 1
-  parts = File.basename(f).scan(/([A-Z_]+)([\d]+)([^\.]*)/)[0]
-  number = "%04d" % parts[1].to_i
-  parts[1] = "#{subdir_idx}#{number}"
-  parts # returns [prefix, number, suffix]
-end
-
 # Get all picture numbers
 @numbers = file_list.map{|f| nameparts(f)[1].to_i}.uniq.sort
 raise "Numbers include 0" if @numbers.include?(0)
@@ -62,6 +52,7 @@ raise "Numbers include 0" if @numbers.include?(0)
 def rename_files(files)
   files.sort.each do |file|
     extname = File.extname(file).downcase
+    suffix = File.basename(file, ".*")[-1]
     prefix, number, suffix = nameparts(file)
 
     newnumber = @numbers.index(number.to_i) + 1

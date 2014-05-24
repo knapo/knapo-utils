@@ -21,7 +21,7 @@ class Photo
     @new_name = [created_on, '-', album_name, '_', "%04d" % new_number, @suffix, '-', @scope, '.', @extname].join
     @new_path = File.join(dir, @extname, @new_name)
   end
-  
+
   def set_created_at
     return unless ['dng', 'nef', 'jpg', 'cr2'].include?(@extname)
     metadata  = `exiv2 -q pr '#{@path}'`
@@ -37,8 +37,8 @@ class Photo
 
   def fix_created_at(list, max_created_at)
     possible_neighbours = list.select{ |f| f.group == group && f.created_at && f.created_at <= max_created_at }
-    previous_file = possible_neighbours.select { |f| f.number < @number }.max_by { |f| f.number } 
-    next_file = possible_neighbours.select { |f| f.number > @number }.min_by { |f| f.number } 
+    previous_file = possible_neighbours.select { |f| f.number < @number }.max_by { |f| f.number }
+    next_file = possible_neighbours.select { |f| f.number > @number }.min_by { |f| f.number }
     puts "Fixing created_at for #{@rel_path} based on #{[previous_file && previous_file.rel_path, next_file && next_file.rel_path].compact.join(' and ')}"
     if previous_file && next_file
       delta = next_file.created_at - previous_file.created_at
