@@ -6,8 +6,8 @@ class Photo
     @path = path
     @old_name = File.basename(@path)
     @scope = scope
-    @group = path.scan(/\/#{scope}\/[0-9]*/)
     @rel_path = path[path.index("/#{scope}/")..-1]
+    @group = File.dirname(@rel_path)
     @extname = File.extname(path).downcase.sub('.', '')
     set_name_parts
     set_created_at

@@ -4,8 +4,8 @@ require 'fileutils'
 require File.expand_path('../photo', __FILE__)
 
 # Custom config
-@max_created_at = Time.parse('2013-10-13 12:00:00 UTC')
-@album_name = 'Israel'
+@max_created_at = Time.parse('2014-10-17 12:00:00 UTC')
+@album_name = 'Catalonia-Andorra-France'
 
 unless ARGV[0]
   puts "No directory given! #{ARGV[0]}"
