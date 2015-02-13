@@ -1,4 +1,15 @@
 #!/usr/bin/env ruby
+#
+# Picture separator.
+#
+# Author; Krzysztof Knapik
+#
+# License: MIT
+#
+# Usage:
+#
+# `$ ruby picombiner.rb [dir] [tile1] [tile2]`
+#
 
 require 'fileutils'
 
@@ -25,8 +36,8 @@ puts "TOTAL: #{nef_all.size} files"
 puts "E: #{nef_e.size} files"
 puts "K: #{nef_k.size} files"
 
-out_dir_k = File.join(File.dirname(in_dir), 'nef-k')
-out_dir_e = File.join(File.dirname(in_dir), 'nef-e')
+out_dir_k = File.join(in_dir, 'nef-k')
+out_dir_e = File.join(in_dir, 'nef-e')
 
 FileUtils.mkdir_p(out_dir_e)
 FileUtils.mkdir_p(out_dir_k)
@@ -41,4 +52,8 @@ nef_e.each do |f|
   target = File.join(out_dir_e, File.basename(f))
   puts "moving #{f} to #{target}"
   FileUtils.mv(f, target, :force => true)
+end
+
+jpg_all.each do |f|
+  FileUtils.rm(f)
 end

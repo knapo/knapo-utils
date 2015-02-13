@@ -7,7 +7,7 @@
 # License: MIT
 #
 # Usage:
-# 
+#
 # `$ ruby picombiner.rb [dir] [tile1] [tile2]`
 #
 
@@ -34,7 +34,7 @@ FileUtils.rm_rf(@out_dir)
 FileUtils.mkdir_p(@out_dir)
 
 def files_in(dir)
-  Dir[File.join(dir, FILE_RULE)].sort
+  Dir[File.join(dir, FILE_RULE)].uniq.sort
 end
 
 def output_file(tile, color)
@@ -60,7 +60,7 @@ end
 
 COLORS.each do |color|
   @tiles.each do |tile|
-    puts "*** #{tile} with #{color} #{@base_border*2}px ***" 
+    puts "*** #{tile} with #{color} #{@base_border*2}px ***"
     montage(tile, color)
     fix_border(tile, color)
   end

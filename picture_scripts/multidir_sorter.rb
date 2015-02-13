@@ -1,11 +1,24 @@
 #!/usr/bin/env ruby
+#
+# Mass media file renamer.
+#
+# Rename all media files (NEF, JPG, DNG etc.) in given directory with
+# new prefix and numbering. All responding files will keep the same name.
+#
+# Author; Krzysztof Knapik
+# http://knapo.net
+#
+# License: MIT
+#
+# Usage:
+# `$ ruby renamer.rb [directory]`
 
 require 'fileutils'
 require File.expand_path('../photo', __FILE__)
 
 # Custom config
-@max_created_at = Time.parse('2014-10-17 12:00:00 UTC')
-@album_name = 'Catalonia-Andorra-France'
+@max_created_at = Time.parse('2014-11-29 12:00:00 UTC')
+@album_name = 'New-Zealand'
 
 unless ARGV[0]
   puts "No directory given! #{ARGV[0]}"
@@ -24,14 +37,14 @@ end
 
 @dirs = Dir[File.join(@dir, '*')].sort
 
-if @dirs.empty? || @dirs.detect{|f| !File.directory?(f) }
+if @dirs.empty? || @dirs.detect{|d| !File.directory?(d) }
   puts "Invalid subdirs: #{@dirs.inspect}"
   exit
 end
 
-@scopes = @dirs.map{|d| File.basename(d)}
+@groups = @dirs.map{|d| File.basename(d)}
 
-puts "SCOPES: #{@scopes.join(', ')}"
+puts "GROUPS: #{@groups.join(', ')}"
 
 FILE_EXT = "*.{JPG,NEF,AVI,TIF,DNG,MOV,jpg,nef,avi,tif,dng,mov}"
 
@@ -41,24 +54,24 @@ def nameparts(f)
 end
 
 # Get files in specific dir
-def file_list(scope)
-  return Dir[File.join(@dir, scope, '**', FILE_EXT)].sort
+def file_list(group)
+  return Dir[File.join(@dir, group, FILE_EXT)].sort
 end
 
 @files = {}
 
-puts 'Listing files for each scope...'
-@scopes.each do |scope|
-  puts 'Scope: ' + scope
-  @files[scope] = Photo.collection(file_list(scope), scope)
-  puts "Found #{@files[scope].size} files."
+puts 'Listing files for each group...'
+@groups.each do |group|
+  puts 'GROUP: ' + group
+  @files[group] = Photo.collection(file_list(group))
+  puts "Found #{@files[group].size} files."
 end
 
 puts "Max created_at is #{@max_created_at}"
 puts "Album name is #{@album_name}"
 
 puts 'Fixing missing timestamps...'
-@files.each do |scope, list|
+@files.each do |group, list|
   list.sort!{|a, b| a.number <=> b.number }
   list.each do |file|
     if file.created_at.nil? || file.created_at > @max_created_at
@@ -73,7 +86,7 @@ end
 @all_files.each_with_index do |file, number|
   file.set_new_name(@dir, @album_name, number + 1)
   FileUtils.mkdir_p(File.dirname(file.new_path)) if @perform
-  msg = "moving *#{file.path}* to *#{file.new_path}*"
+  msg = "moving *#{file.rel_path}* to *#{file.new_name}* [#{file.created_at.to_s}]"
   puts msg
   FileUtils.mv(file.path, file.new_path, :force => true) if @perform
 end
